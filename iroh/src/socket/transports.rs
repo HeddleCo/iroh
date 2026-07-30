@@ -549,6 +549,38 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "unstable-custom-transport-backpressure")]
+    #[test]
+    fn pending_custom_sender_preserves_the_transmit_for_noq() {
+        // GIVEN: a custom path that is temporarily unable to accept a transmit.
+        let remote_addr = CustomAddr::from_parts(2, &[7]);
+        let polls = Arc::new(AtomicUsize::new(0));
+        let transports = custom_only_transports(vec![Box::new(PendingCustomEndpoint {
+            remote_addr: remote_addr.clone(),
+            polls: polls.clone(),
+            local_addr_watch: Watchable::new(vec![CustomAddr::from_parts(1, &[7])]),
+        })]);
+        let mut sender = transports.create_sender();
+        let transmit = Transmit {
+            ecn: None,
+            contents: &[1, 2, 3],
+            segment_size: None,
+        };
+        let network_path = FourTuple::Custom {
+            remote: remote_addr,
+            local: None,
+        };
+        let waker = futures_util::task::noop_waker();
+        let mut cx = Context::from_waker(&waker);
+
+        // WHEN: iroh polls the custom sender.
+        let result = Pin::new(&mut sender).poll_send(&mut cx, &network_path, &transmit);
+
+        // THEN: Pending reaches noq, which retains and retries this exact transmit.
+        assert!(result.is_pending());
+        assert_eq!(polls.load(Ordering::Relaxed), 1);
+    }
+
     fn custom_only_transports(custom: Vec<Box<dyn CustomEndpoint>>) -> Transports {
         let metrics = EndpointMetrics::default();
         Transports {
@@ -651,6 +683,63 @@ mod tests {
             _transmit: &Transmit<'_>,
         ) -> Poll<io::Result<()>> {
             Poll::Ready(Ok(()))
+        }
+    }
+
+    #[cfg(feature = "unstable-custom-transport-backpressure")]
+    #[derive(Debug)]
+    struct PendingCustomEndpoint {
+        remote_addr: CustomAddr,
+        polls: Arc<AtomicUsize>,
+        local_addr_watch: Watchable<Vec<CustomAddr>>,
+    }
+
+    #[cfg(feature = "unstable-custom-transport-backpressure")]
+    impl CustomEndpoint for PendingCustomEndpoint {
+        fn watch_local_addrs(&self) -> n0_watcher::Direct<Vec<CustomAddr>> {
+            self.local_addr_watch.watch()
+        }
+
+        fn create_sender(&self) -> Arc<dyn CustomSender> {
+            Arc::new(PendingCustomSender {
+                remote_addr: self.remote_addr.clone(),
+                polls: self.polls.clone(),
+            })
+        }
+
+        fn poll_recv(
+            &mut self,
+            _cx: &mut Context,
+            _bufs: &mut [io::IoSliceMut<'_>],
+            _metas: &mut [noq_udp::RecvMeta],
+            _recv_infos: &mut [RecvInfo],
+        ) -> Poll<io::Result<usize>> {
+            Poll::Pending
+        }
+    }
+
+    #[cfg(feature = "unstable-custom-transport-backpressure")]
+    #[derive(Debug)]
+    struct PendingCustomSender {
+        remote_addr: CustomAddr,
+        polls: Arc<AtomicUsize>,
+    }
+
+    #[cfg(feature = "unstable-custom-transport-backpressure")]
+    impl CustomSender for PendingCustomSender {
+        fn is_valid_send_addr(&self, addr: &CustomAddr) -> bool {
+            addr == &self.remote_addr
+        }
+
+        fn poll_send(
+            &self,
+            _cx: &mut Context,
+            _dst: &CustomAddr,
+            _src: Option<&CustomAddr>,
+            _transmit: &Transmit<'_>,
+        ) -> Poll<io::Result<()>> {
+            self.polls.fetch_add(1, Ordering::Relaxed);
+            Poll::Pending
         }
     }
 }
@@ -1227,13 +1316,23 @@ impl TransportsSender {
                 }
             }
             FourTuple::Custom { remote, local } => {
+                #[cfg(feature = "unstable-custom-transport-backpressure")]
+                let mut has_valid_sender = false;
                 for sender in &mut self.custom {
                     if sender.is_valid_send_addr(remote) {
+                        #[cfg(feature = "unstable-custom-transport-backpressure")]
+                        {
+                            has_valid_sender = true;
+                        }
                         match sender.poll_send(cx, remote, local.as_ref(), transmit) {
                             Poll::Pending => {}
                             Poll::Ready(res) => return Poll::Ready(res),
                         }
                     }
+                }
+                #[cfg(feature = "unstable-custom-transport-backpressure")]
+                if has_valid_sender {
+                    return Poll::Pending;
                 }
             }
         }
@@ -1491,10 +1590,16 @@ impl noq::UdpSender for Sender {
                 Poll::Ready(Ok(()))
             }
             Poll::Pending => {
+                #[cfg(feature = "unstable-custom-transport-backpressure")]
+                if matches!(network_path, FourTuple::Custom { .. }) {
+                    return Poll::Pending;
+                }
+
                 // We do not want to block the next send which might be on a
-                // different transport.  Instead we let Noq handle this as a lost
+                // different transport. Instead we let Noq handle this as a lost
                 // datagram.
-                // TODO: Revisit this: we might want to do something better.
+                // TODO: Revisit this: custom transports need path-local
+                // readiness before they can safely propagate backpressure.
                 trace!(dst=%network_path, "transport pending, dropped transmit");
                 Poll::Ready(Ok(()))
             }

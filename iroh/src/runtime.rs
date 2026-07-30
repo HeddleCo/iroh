@@ -1,4 +1,6 @@
-use std::{pin::Pin, sync::Arc};
+use std::pin::Pin;
+#[cfg(feature = "unstable-custom-runtime")]
+use std::sync::Arc;
 
 use iroh_base::EndpointId;
 #[cfg(wasm_browser)]
