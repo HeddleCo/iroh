@@ -36,7 +36,7 @@ less net work for networks
       Docs Site
     </a>
     <span> | </span>
-    <a href="https://docs.rs/iroh">
+    <a href="https://docs.rs/heddleco-iroh">
       Rust Docs
     </a>
   </h3>
@@ -187,11 +187,11 @@ shall be dual licensed as above, without any additional terms or conditions.
 [QUIC]: https://en.wikipedia.org/wiki/QUIC
 [hole-punch]: https://en.wikipedia.org/wiki/Hole_punching_(networking)
 [BLAKE3]: https://github.com/BLAKE3-team/BLAKE3
-[`Endpoint`]: https://docs.rs/iroh/latest/iroh/struct.Endpoint.html
-[`SecretKey`]: https://docs.rs/iroh/latest/iroh/struct.SecretKey.html
-[`EndpointId`]: https://docs.rs/iroh/latest/iroh/struct.EndpointId.html
-[address lookup services]: https://docs.rs/iroh/latest/iroh/address_lookup/index.html
-[`N0` preset]: https://docs.rs/iroh/latest/iroh/endpoint/presets/struct.N0.html
+[`Endpoint`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.Endpoint.html
+[`SecretKey`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.SecretKey.html
+[`EndpointId`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.EndpointId.html
+[address lookup services]: https://docs.rs/heddleco-iroh/latest/iroh/address_lookup/index.html
+[`N0` preset]: https://docs.rs/heddleco-iroh/latest/iroh/endpoint/presets/struct.N0.html
 [iroh-blobs]: https://github.com/n0-computer/iroh-blobs
 [iroh-gossip]: https://github.com/n0-computer/iroh-gossip
 [iroh-ffi]: https://github.com/n0-computer/iroh-ffi
