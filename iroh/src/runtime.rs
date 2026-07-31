@@ -1,13 +1,13 @@
 use std::pin::Pin;
 #[cfg(feature = "unstable-custom-runtime")]
 use std::sync::Arc;
+#[cfg(not(wasm_browser))]
+use std::time::Instant;
 
 use iroh_base::EndpointId;
 #[cfg(wasm_browser)]
 use n0_future::time::Instant;
 use portable_atomic::{AtomicU64, Ordering};
-#[cfg(not(wasm_browser))]
-use std::time::Instant;
 use tokio_util::sync::CancellationToken;
 #[cfg(not(wasm_browser))]
 use tokio_util::task::TaskTracker;

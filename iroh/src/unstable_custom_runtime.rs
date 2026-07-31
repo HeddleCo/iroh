@@ -4,12 +4,12 @@
 //! It is not covered by semantic versioning guarantees and may change in any
 //! release without a major version bump.
 
+#[cfg(not(wasm_browser))]
+pub use std::time::Instant;
 use std::{fmt::Debug, pin::Pin};
 
 #[cfg(wasm_browser)]
 pub use n0_future::time::Instant;
-#[cfg(not(wasm_browser))]
-pub use std::time::Instant;
 
 /// Supplies the monotonic clock and timers used by an endpoint's QUIC runtime.
 ///

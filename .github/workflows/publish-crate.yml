@@ -1,0 +1,78 @@
+# .github/workflows/publish-crate.yml
+#
+# Publishes heddleco-iroh to crates.io on a version tag.
+#
+# This fork exists because heddle-cli needs the `unstable-custom-transport-backpressure`
+# feature, which upstream `iroh` on crates.io does not provide. That feature is
+# load-bearing: it underpins the bounded-memory guarantee proven in HeddleCo/heddle#1166
+# (peak live provider-body buffering constant at 524,288 bytes across a 16x pack-size
+# increase). Consumers depend on it as:
+#
+#     iroh = { package = "heddleco-iroh", version = "0.1.0" }
+#
+# so the import path stays `iroh::` and no downstream source changes.
+#
+# Required secret: CRATES_IO_API_KEY — the same crates.io token HeddleCo/api uses.
+# The env var name (CARGO_REGISTRY_TOKEN) is cargo's documented input; the secret
+# label matches the HeddleCo convention.
+#
+# Only the `iroh` package is published (as `heddleco-iroh`); every other workspace
+# member is marked `publish = false`.
+
+name: Publish crate
+
+on:
+  push:
+    tags:
+      - v0.*.*
+      - v0.*.*-rc.*
+  # Manual runs are allowed so a republish after an upstream security fix does not
+  # require inventing a tag. Without this, re-publishing means pushing commits to
+  # someone's branch, which is how a routine fix becomes a five-step operation.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Fail loudly and early rather than at the upload step, so an unset secret
+      # reads as a configuration problem instead of a mysterious publish failure.
+      - name: Require crates.io credential
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API_KEY }}
+        run: |
+          if [[ -z "${CARGO_REGISTRY_TOKEN:-}" ]]; then
+            echo "::error::CARGO_REGISTRY_TOKEN is empty — the CRATES_IO_API_KEY secret is unset in HeddleCo/iroh. Add it (the same crates.io token HeddleCo/api uses), then re-run."
+            exit 1
+          fi
+
+      - name: Build
+        run: cargo build --locked -p heddleco-iroh
+
+      # The whole reason this fork is published. If the feature does not survive
+      # packaging, publishing is pointless — heddle-cli would fail to resolve it
+      # exactly as it does against upstream iroh today.
+      - name: Verify the backpressure feature survives packaging
+        run: |
+          cargo package --locked -p heddleco-iroh --list > /tmp/pkg-files.txt
+          cargo metadata --format-version 1 --no-deps \
+            | grep -q 'unstable-custom-transport-backpressure' \
+            || { echo "::error::unstable-custom-transport-backpressure is absent from package metadata"; exit 1; }
+          echo "feature present in package metadata"
+
+      - name: Dry run
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API_KEY }}
+        run: cargo publish --locked --dry-run -p heddleco-iroh
+
+      - name: Publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API_KEY }}
+        run: cargo publish --locked -p heddleco-iroh
