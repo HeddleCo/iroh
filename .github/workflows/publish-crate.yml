@@ -12,6 +12,10 @@
 #
 # so the import path stays `iroh::` and no downstream source changes.
 #
+# Release tags use `heddleco-v*` because this fork retains upstream iroh's complete
+# `v*` tag history. Do not use tags such as `v0.2.0`: they can collide with inherited
+# upstream tags. The git tag namespace is independent of the crate version.
+#
 # Required secret: CRATES_IO_API_KEY — the same crates.io token HeddleCo/api uses.
 # The env var name (CARGO_REGISTRY_TOKEN) is cargo's documented input; the secret
 # label matches the HeddleCo convention.
@@ -24,8 +28,7 @@ name: Publish crate
 on:
   push:
     tags:
-      - v0.*.*
-      - v0.*.*-rc.*
+      - heddleco-v*
   # Manual runs are allowed so a republish after an upstream security fix does not
   # require inventing a tag. Without this, re-publishing means pushing commits to
   # someone's branch, which is how a routine fix becomes a five-step operation.
