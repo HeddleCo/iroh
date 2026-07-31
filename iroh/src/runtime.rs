@@ -1,7 +1,13 @@
 use std::pin::Pin;
+#[cfg(feature = "unstable-custom-runtime")]
+use std::sync::Arc;
 
 use iroh_base::EndpointId;
+#[cfg(wasm_browser)]
+use n0_future::time::Instant;
 use portable_atomic::{AtomicU64, Ordering};
+#[cfg(not(wasm_browser))]
+use std::time::Instant;
 use tokio_util::sync::CancellationToken;
 #[cfg(not(wasm_browser))]
 use tokio_util::task::TaskTracker;
@@ -9,6 +15,8 @@ use tokio_util::task::TaskTracker;
 #[derive(Debug)]
 pub(crate) struct Runtime {
     id: EndpointId,
+    #[cfg(feature = "unstable-custom-runtime")]
+    time_source: Option<Arc<dyn crate::unstable_custom_runtime::QuicTimeSource>>,
     #[cfg(not(wasm_browser))]
     tasks: TaskTracker,
     #[cfg(not(wasm_browser))]
@@ -20,9 +28,16 @@ pub(crate) struct Runtime {
 impl Runtime {
     /// Create a new [`Runtime`] that manages shutting down tasks properly,
     /// whether gracefully or un-gracefully.
-    pub(crate) fn new(id: EndpointId) -> Self {
+    pub(crate) fn new(
+        id: EndpointId,
+        #[cfg(feature = "unstable-custom-runtime")] time_source: Option<
+            Arc<dyn crate::unstable_custom_runtime::QuicTimeSource>,
+        >,
+    ) -> Self {
         Self {
             id,
+            #[cfg(feature = "unstable-custom-runtime")]
+            time_source,
             #[cfg(not(wasm_browser))]
             tasks: TaskTracker::new(),
             #[cfg(not(wasm_browser))]
@@ -66,11 +81,19 @@ impl Runtime {
 impl noq::Runtime for Runtime {
     #[cfg(not(wasm_browser))]
     fn new_timer(&self, i: std::time::Instant) -> Pin<Box<dyn noq::AsyncTimer>> {
+        #[cfg(feature = "unstable-custom-runtime")]
+        if let Some(time_source) = &self.time_source {
+            return time_source.new_timer(i);
+        }
         noq::TokioRuntime.new_timer(i)
     }
 
     #[cfg(wasm_browser)]
     fn new_timer(&self, deadline: n0_future::time::Instant) -> Pin<Box<dyn noq::AsyncTimer>> {
+        #[cfg(feature = "unstable-custom-runtime")]
+        if let Some(time_source) = &self.time_source {
+            return time_source.new_timer(deadline);
+        }
         Box::pin(web::Timer(n0_future::time::sleep_until(deadline)))
     }
 
@@ -98,6 +121,14 @@ impl noq::Runtime for Runtime {
     #[cfg(wasm_browser)]
     fn spawn(&self, future: Pin<Box<dyn Future<Output = ()> + Send>>) {
         wasm_bindgen_futures::spawn_local(future);
+    }
+
+    fn now(&self) -> Instant {
+        #[cfg(feature = "unstable-custom-runtime")]
+        if let Some(time_source) = &self.time_source {
+            return time_source.now();
+        }
+        Instant::now()
     }
 
     // We're not actually using this function in iroh
@@ -131,5 +162,73 @@ mod web {
         fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
             Pin::new(&mut self.0).poll(cx)
         }
+    }
+}
+
+#[cfg(all(test, feature = "unstable-custom-runtime", not(wasm_browser)))]
+mod tests {
+    use std::{
+        pin::Pin,
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
+        task::{Context, Poll},
+        time::{Duration, Instant},
+    };
+
+    use iroh_base::SecretKey;
+    use noq::Runtime as _;
+
+    use super::Runtime;
+    use crate::unstable_custom_runtime::QuicTimeSource;
+
+    #[derive(Debug)]
+    struct TestTimeSource {
+        now: Instant,
+        timers_created: AtomicUsize,
+    }
+
+    impl QuicTimeSource for TestTimeSource {
+        fn new_timer(&self, deadline: Instant) -> Pin<Box<dyn noq::AsyncTimer>> {
+            self.timers_created.fetch_add(1, Ordering::Relaxed);
+            Box::pin(TestTimer { deadline })
+        }
+
+        fn now(&self) -> Instant {
+            self.now
+        }
+    }
+
+    #[derive(Debug)]
+    struct TestTimer {
+        deadline: Instant,
+    }
+
+    impl noq::AsyncTimer for TestTimer {
+        fn reset(mut self: Pin<&mut Self>, deadline: Instant) {
+            self.deadline = deadline;
+        }
+
+        fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<()> {
+            Poll::Pending
+        }
+    }
+
+    #[test]
+    fn custom_time_source_drives_noq_clock_and_timers() {
+        let now = Instant::now() + Duration::from_secs(10);
+        let time_source = Arc::new(TestTimeSource {
+            now,
+            timers_created: AtomicUsize::new(0),
+        });
+        let runtime = Runtime::new(
+            SecretKey::generate().public(),
+            Some(time_source.clone() as Arc<dyn QuicTimeSource>),
+        );
+
+        assert_eq!(runtime.now(), now);
+        let _timer = runtime.new_timer(now + Duration::from_secs(1));
+        assert_eq!(time_source.timers_created.load(Ordering::Relaxed), 1);
     }
 }

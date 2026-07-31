@@ -2,6 +2,7 @@
 name = "iroh-dns"
 version = "1.0.3"
 edition = "2024"
+publish = false
 description = "DNS-based endpoint discovery for iroh"
 license = "MIT OR Apache-2.0"
 authors = ["n0 team"]

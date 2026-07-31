@@ -8,8 +8,23 @@
 less net work for networks
 </h3>
 
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://docs.rs/iroh/)
-[![Crates.io](https://img.shields.io/crates/v/iroh.svg?style=flat-square)](https://crates.io/crates/iroh)
+> [!IMPORTANT]
+> This is the packaged README for HeddleCo's maintained fork, published as
+> `heddleco-iroh`. Release `0.1.0` is based on upstream `iroh` `1.0.3` at
+> commit `0438766522229f8b330ac95f45cd61c7159f352a` and includes HeddleCo fork
+> changes through commit `6774e846e16aa9f82fe67d4eafa956c46d6e9713`.
+>
+> Consumers should preserve the normal Rust import name with
+> `iroh = { package = "heddleco-iroh", version = "0.1.0" }`. The fork's
+> versions are independent of upstream's versions and do not imply parity.
+>
+> Publishing this fork commits HeddleCo to tracking upstream releases,
+> reviewing and republishing upstream security fixes promptly, and managing
+> the compatibility and divergence risk created by carrying downstream
+> changes.
+
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://docs.rs/heddleco-iroh/)
+[![Crates.io](https://img.shields.io/crates/v/heddleco-iroh.svg?style=flat-square)](https://crates.io/crates/heddleco-iroh)
 [![Chat](https://img.shields.io/discord/1161119546170687619?logo=discord&style=flat-square)](https://discord.com/invite/DpmJgtU7cW)
 [![Youtube](https://img.shields.io/badge/YouTube-red?logo=youtube&logoColor=white&style=flat-square)](https://www.youtube.com/@n0computer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE-MIT)
@@ -21,7 +36,7 @@ less net work for networks
       Docs Site
     </a>
     <span> | </span>
-    <a href="https://docs.rs/iroh">
+    <a href="https://docs.rs/heddleco-iroh">
       Rust Docs
     </a>
   </h3>
@@ -172,11 +187,11 @@ shall be dual licensed as above, without any additional terms or conditions.
 [QUIC]: https://en.wikipedia.org/wiki/QUIC
 [hole-punch]: https://en.wikipedia.org/wiki/Hole_punching_(networking)
 [BLAKE3]: https://github.com/BLAKE3-team/BLAKE3
-[`Endpoint`]: https://docs.rs/iroh/latest/iroh/struct.Endpoint.html
-[`SecretKey`]: https://docs.rs/iroh/latest/iroh/struct.SecretKey.html
-[`EndpointId`]: https://docs.rs/iroh/latest/iroh/struct.EndpointId.html
-[address lookup services]: https://docs.rs/iroh/latest/iroh/address_lookup/index.html
-[`N0` preset]: https://docs.rs/iroh/latest/iroh/endpoint/presets/struct.N0.html
+[`Endpoint`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.Endpoint.html
+[`SecretKey`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.SecretKey.html
+[`EndpointId`]: https://docs.rs/heddleco-iroh/latest/iroh/struct.EndpointId.html
+[address lookup services]: https://docs.rs/heddleco-iroh/latest/iroh/address_lookup/index.html
+[`N0` preset]: https://docs.rs/heddleco-iroh/latest/iroh/endpoint/presets/struct.N0.html
 [iroh-blobs]: https://github.com/n0-computer/iroh-blobs
 [iroh-gossip]: https://github.com/n0-computer/iroh-gossip
 [iroh-ffi]: https://github.com/n0-computer/iroh-ffi

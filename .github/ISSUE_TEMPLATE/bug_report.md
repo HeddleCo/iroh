@@ -25,7 +25,7 @@ Version:
 <!-- If possible use cargo tree: -->
 
 ```
-[paste output from `cargo tree -i -e features -p iroh` here]
+[paste output from `cargo tree -i -e features -p heddleco-iroh` here]
 ```
 
 <!-- Otherwise, please list the iroh version and/or commit hash. -->

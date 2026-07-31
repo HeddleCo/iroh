@@ -196,6 +196,9 @@ pub(crate) struct Options {
 
     /// Explicitly configured external addresses to advertise.
     pub(crate) configured_addrs: BTreeSet<SocketAddr>,
+
+    #[cfg(feature = "unstable-custom-runtime")]
+    pub(crate) quic_time_source: Option<Arc<dyn crate::unstable_custom_runtime::QuicTimeSource>>,
 }
 
 /// Inner state for an iroh [`crate::Endpoint`].
@@ -893,6 +896,8 @@ impl EndpointInner {
             net_report_config,
             static_config,
             configured_addrs,
+            #[cfg(feature = "unstable-custom-runtime")]
+            quic_time_source,
         } = opts;
 
         let address_lookup = address_lookup::AddressLookupServices::default();
@@ -1022,7 +1027,11 @@ impl EndpointInner {
         let local_addrs_watch = transports.local_addrs_watch();
         let transports_network_change = transports.create_network_change_sender();
 
-        let runtime = Arc::new(Runtime::new(secret_key.public()));
+        let runtime = Arc::new(Runtime::new(
+            secret_key.public(),
+            #[cfg(feature = "unstable-custom-runtime")]
+            quic_time_source,
+        ));
 
         let endpoint = noq::Endpoint::new_with_abstract_socket(
             endpoint_config,
@@ -2184,6 +2193,8 @@ mod tests {
             net_report_config: Default::default(),
             static_config,
             configured_addrs: Default::default(),
+            #[cfg(feature = "unstable-custom-runtime")]
+            quic_time_source: None,
         }
     }
 
@@ -2600,6 +2611,8 @@ mod tests {
             net_report_config: Default::default(),
             static_config,
             configured_addrs: Default::default(),
+            #[cfg(feature = "unstable-custom-runtime")]
+            quic_time_source: None,
         };
         let sock = EndpointInner::bind(opts).await?;
         Ok(sock)

@@ -12,14 +12,14 @@
 //!
 //! ```sh
 //! # On Linux (with user namespace support):
-//! cargo nextest run -p iroh --test patchbay --profile patchbay
+//! cargo nextest run -p heddleco-iroh --test patchbay --profile patchbay
 //! # or use the `cargo make` alias:
 //! cargo make patchbay
 //! # can also pass additional args:
 //! cargo make patchbay holepunch_simple --no-capture
 //!
 //! # On macOS (runs in container via patchbay CLI):
-//! patchbay test --release -p iroh --test patchbay
+//! patchbay test --release -p heddleco-iroh --test patchbay
 //! ```
 
 // patchbay only runs on linux, and is skipped in cross-compile environments

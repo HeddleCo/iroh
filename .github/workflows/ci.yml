@@ -185,7 +185,7 @@ jobs:
           cargo ndk test --no-run -p iroh-base --all-features
           cargo ndk test --no-run -p iroh-dns --features tls-ring
           cargo ndk test --no-run -p iroh-relay --features tls-ring,metrics
-          cargo ndk test --no-run -p iroh --features tls-ring,metrics,portmapper,test-utils
+          cargo ndk test --no-run -p heddleco-iroh --features tls-ring,metrics,portmapper,test-utils
 
       - name: Run workspace tests on Android emulator
         if: matrix.target == 'x86_64-linux-android'
@@ -241,7 +241,7 @@ jobs:
             cargo ndk test -p iroh-base --all-features
             cargo ndk test -p iroh-dns --features tls-ring
             cargo ndk test -p iroh-relay --features tls-ring,metrics
-            cargo ndk test -p iroh --features tls-ring,metrics,portmapper,test-utils
+            cargo ndk test -p heddleco-iroh --features tls-ring,metrics,portmapper,test-utils
 
   cross_test:
     name: Cross Test
@@ -327,7 +327,7 @@ jobs:
         run: cargo build --target wasm32-unknown-unknown -p iroh-relay
 
       - name: wasm32 build (iroh)
-        run: cargo build --target wasm32-unknown-unknown -p iroh
+        run: cargo build --target wasm32-unknown-unknown -p heddleco-iroh
 
       # If the Wasm file contains any 'import "env"' declarations, then
       # some non-Wasm-compatible code made it into the final code.
@@ -340,7 +340,7 @@ jobs:
           ! wasm-tools print --skeleton target/wasm32-unknown-unknown/debug/iroh.wasm | grep 'import "env"'
 
       - name: Run integration test in wasm
-        run: cargo test -p iroh --test integration --target=wasm32-unknown-unknown
+        run: cargo test -p heddleco-iroh --test integration --target=wasm32-unknown-unknown
 
   check_semver:
     needs: pick-runner
@@ -481,8 +481,8 @@ jobs:
         run: |
           fail=0
           for dep in portmapper igd-next swarm-discovery ring aws-lc-rs; do
-            echo    "cargo tree -p iroh --no-default-features --edges normal --target all -i $dep";
-            output=$(cargo tree -p iroh --no-default-features --edges normal --target all -i "$dep" 2>&1) || true
+            echo    "cargo tree -p heddleco-iroh --no-default-features --edges normal --target all -i $dep";
+            output=$(cargo tree -p heddleco-iroh --no-default-features --edges normal --target all -i "$dep" 2>&1) || true
             if ! echo "$output" | grep -qE "(nothing to print|did not match any packages)"; then
               echo "ERROR: $dep should not be in the dependency tree without its feature"
               echo "$output"

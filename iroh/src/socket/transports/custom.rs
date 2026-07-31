@@ -95,6 +95,12 @@ pub trait CustomSender: std::fmt::Debug + Send + Sync + 'static {
     /// This will only be called from iroh with addresses for which [CustomSender::is_valid_send_addr] returns true.
     ///
     /// You should handle invalid addresses by returning an error.
+    ///
+    /// With the `unstable-custom-transport-backpressure` feature, returning
+    /// [`Poll::Pending`] retains this transmit in the noq connection driver.
+    /// The sender must arrange to wake `cx` when it may accept the same
+    /// transmit. Without that feature, iroh treats `Pending` as packet loss to
+    /// preserve the historic custom-transport behavior.
     fn poll_send(
         &self,
         cx: &mut std::task::Context,

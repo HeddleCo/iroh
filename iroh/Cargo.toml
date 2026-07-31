@@ -1,18 +1,20 @@
 [package]
-name = "iroh"
-version = "1.0.3"
+name = "heddleco-iroh"
+version = "0.1.0"
 edition = "2024"
+publish = ["crates-io"]
 readme = "README.md"
-description = "p2p quic connections dialed by public key"
+description = "HeddleCo's maintained fork of iroh with custom transport backpressure"
 license = "MIT OR Apache-2.0"
 authors = ["dignifiedquire <me@dignifiedquire.com>", "n0 team"]
-repository = "https://github.com/n0-computer/iroh"
+repository = "https://github.com/HeddleCo/iroh"
 keywords = ["quic", "networking", "holepunching", "p2p"]
 
 # Sadly this also needs to be updated in .github/workflows/ci.yml
 rust-version = "1.91"
 
 [lib]
+name = "iroh"
 # We need "cdylib" to actually generate .wasm files when we run with --target=wasm32-unknown-unknown.
 # It would be nice if we could make this target-dependent, but we can't (yet): https://github.com/rust-lang/cargo/issues/12260
 crate-type = ["lib", "cdylib"]
@@ -161,12 +163,27 @@ tls-ring = ["noq/ring", "iroh-relay/tls-ring", "iroh-dns/tls-ring"]
 tls-aws-lc-rs = ["noq/aws-lc-rs", "iroh-relay/tls-aws-lc-rs", "iroh-dns/tls-aws-lc-rs"]
 # Unstable: Custom transport API (may change without notice)
 unstable-custom-transports = []
+# Unstable: Preserve CustomSender backpressure instead of treating Pending as packet loss.
+#
+# This is connection-local, matching noq's UdpSender contract. A blocked transmit
+# still blocks every path belonging to that QUIC connection, so this is not yet a
+# general multipath path-local scheduler.
+unstable-custom-transport-backpressure = ["unstable-custom-transports"]
+# Unstable: Custom QUIC time source API (may change without notice)
+unstable-custom-runtime = []
 # Unstable: API to access an endpoint's NetReport (may change without notice)
 unstable-net-report = []
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "iroh_docsrs"]
+
+[package.metadata.heddleco-fork]
+upstream-package = "iroh"
+upstream-version = "1.0.3"
+upstream-repository = "https://github.com/n0-computer/iroh"
+upstream-revision = "0438766522229f8b330ac95f45cd61c7159f352a"
+fork-revision = "6774e846e16aa9f82fe67d4eafa956c46d6e9713"
 
 [package.metadata.cargo_check_external_types]
 allowed_external_types = [
@@ -177,6 +194,7 @@ allowed_external_types = [
     # crates owned by us that will move to 1.0 as well
     "iroh_metrics::*",
     "n0_error::*",
+    "n0_future::*",
     "n0_watcher::*",
     "noq::*",
     "noq_proto::*",

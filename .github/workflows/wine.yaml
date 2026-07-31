@@ -56,7 +56,7 @@ jobs:
 
       - name: Build tests
         # Release mode required - debug builds exceed mingw's export ordinal limit (~65k symbols)
-        run: cargo build --target x86_64-pc-windows-gnu --tests -p iroh --release
+        run: cargo build --target x86_64-pc-windows-gnu --tests -p heddleco-iroh --release
 
       - name: Run tests under Wine
         env:
@@ -66,4 +66,4 @@ jobs:
           --target x86_64-pc-windows-gnu
           --profile wine
           --release
-          -p iroh
+          -p heddleco-iroh

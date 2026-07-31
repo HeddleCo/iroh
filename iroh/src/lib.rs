@@ -278,6 +278,8 @@ pub mod endpoint;
 pub mod metrics;
 mod net_report;
 pub mod protocol;
+#[cfg(feature = "unstable-custom-runtime")]
+pub mod unstable_custom_runtime;
 
 pub use endpoint::{Endpoint, RelayMode};
 pub use iroh_base::{

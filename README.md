@@ -4,14 +4,29 @@
 less net work for networks
 </h3>
 
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://docs.rs/iroh/)
-[![Crates.io](https://img.shields.io/crates/v/iroh.svg?style=flat-square)](https://crates.io/crates/iroh)
-[![downloads](https://img.shields.io/crates/d/iroh.svg?style=flat-square)](https://crates.io/crates/iroh)
+## HeddleCo fork
+
+The core crate in this repository is published as `heddleco-iroh`. Fork
+release `0.1.0` is based on upstream `iroh` `1.0.3` at commit
+`0438766522229f8b330ac95f45cd61c7159f352a` and contains HeddleCo changes
+through commit `6774e846e16aa9f82fe67d4eafa956c46d6e9713`.
+
+Consumers retain the normal import name by declaring
+`iroh = { package = "heddleco-iroh", version = "0.1.0" }`. Fork versions are
+independent of upstream versions and do not imply parity.
+
+Maintaining a published fork commits HeddleCo to tracking upstream releases,
+reviewing and republishing upstream security fixes promptly, and managing the
+compatibility and divergence risk created by carrying downstream changes.
+
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://docs.rs/heddleco-iroh/)
+[![Crates.io](https://img.shields.io/crates/v/heddleco-iroh.svg?style=flat-square)](https://crates.io/crates/heddleco-iroh)
+[![downloads](https://img.shields.io/crates/d/heddleco-iroh.svg?style=flat-square)](https://crates.io/crates/heddleco-iroh)
 [![Chat](https://img.shields.io/discord/1161119546170687619?logo=discord&style=flat-square)](https://discord.com/invite/DpmJgtU7cW)
 [![Youtube](https://img.shields.io/badge/YouTube-red?logo=youtube&logoColor=white&style=flat-square)](https://www.youtube.com/@n0computer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE-MIT)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE-APACHE)
-[![CI](https://img.shields.io/github/actions/workflow/status/n0-computer/iroh/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/n0-computer/iroh/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/HeddleCo/iroh/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/HeddleCo/iroh/actions/workflows/ci.yml)
 
 <div align="center">
   <h3>
@@ -19,7 +34,7 @@ less net work for networks
       Docs Site
     </a>
     <span> | </span>
-    <a href="https://docs.rs/iroh">
+    <a href="https://docs.rs/heddleco-iroh">
       Rust Docs
     </a>
   </h3>
