@@ -2,6 +2,7 @@
 name = "iroh-relay"
 version = "1.0.3"
 edition = "2024"
+publish = false
 readme = "README.md"
 description = "Iroh's relay server and client"
 license = "MIT OR Apache-2.0"

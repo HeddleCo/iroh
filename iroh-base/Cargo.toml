@@ -2,6 +2,7 @@
 name = "iroh-base"
 version = "1.0.3"
 edition = "2024"
+publish = false
 readme = "README.md"
 description = "base type and utilities for Iroh"
 license = "MIT OR Apache-2.0"
