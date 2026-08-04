@@ -558,7 +558,7 @@ mod tests {
 
     #[cfg(with_crypto_provider)]
     #[tokio::test]
-    async fn outer_sender_propagates_pending_and_preserves_payload_on_repoll() {
+    async fn outer_sender_reports_would_block_and_preserves_payload_on_repoll() {
         let endpoint = crate::Endpoint::builder(crate::endpoint::presets::Minimal)
             .bind()
             .await
@@ -592,11 +592,10 @@ mod tests {
         let waker = waker(wakes.clone());
         let mut cx = Context::from_waker(&waker);
 
-        assert!(
-            Pin::new(&mut sender)
-                .poll_send(&transmit, &mut cx)
-                .is_pending()
-        );
+        assert!(matches!(
+            Pin::new(&mut sender).poll_send(&transmit, &mut cx),
+            Poll::Ready(Err(ref err)) if err.kind() == io::ErrorKind::WouldBlock
+        ));
         assert_eq!(state.transmits(), vec![contents]);
 
         state.allow_send();
@@ -1656,7 +1655,12 @@ impl noq::UdpSender for Sender {
                 debug!(dst=%network_path, "dropped transmit: {err:#}");
                 Poll::Ready(Ok(()))
             }
-            Poll::Pending => Poll::Pending,
+            Poll::Pending => {
+                // The selected transport registered the waker.  WouldBlock tells
+                // Noq to retain this transmit for the destination and keep
+                // sending on other paths.
+                Poll::Ready(Err(io::ErrorKind::WouldBlock.into()))
+            }
         }
     }
 
