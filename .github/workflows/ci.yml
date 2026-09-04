@@ -403,7 +403,7 @@ jobs:
   check_fmt:
     timeout-minutes: 30
     name: Checking fmt
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     env:
       RUSTC_WRAPPER: "sccache"
       SCCACHE_GHA_ENABLED: "on"
@@ -473,7 +473,7 @@ jobs:
   check_optional_deps:
     timeout-minutes: 10
     name: Check optional deps are absent without features
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -518,7 +518,7 @@ jobs:
   cargo_deny:
     timeout-minutes: 30
     name: cargo deny
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     steps:
       - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
@@ -542,7 +542,7 @@ jobs:
 
   codespell:
     timeout-minutes: 30
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     steps:
       - uses: actions/checkout@v7
       - name: Cache pip
