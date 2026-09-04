@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 30
     name: Docs preview
     if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ) && !github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     env:
       RUSTC_WRAPPER: "sccache"
       SCCACHE_GHA_ENABLED: "on"

@@ -81,11 +81,11 @@ on:
           (case-insensitive). Pass e.g. '["self-hosted","windows","x64"]' to
           route a Windows batch.
         type: string
-        default: '["self-hosted","linux","X64"]'
+        default: '["self-hosted","linux","X64","heddleco"]'
       overflow_runner:
         description: JSON array for overflow slots that land on Blacksmith
         type: string
-        default: '["blacksmith-4vcpu-ubuntu-2204"]'
+        default: '["self-hosted","linux","X64","heddleco"]'
       blacksmith_busy_match:
         description: >
           Substring a busy Blacksmith runner's labels must contain to count

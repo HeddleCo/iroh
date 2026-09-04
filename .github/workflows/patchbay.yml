@@ -21,7 +21,7 @@ jobs:
   patchbay_tests:
     name: Patchbay Tests
     timeout-minutes: 15
-    runs-on: [self-hosted, linux, X64]
+    runs-on: [self-hosted, linux, X64, heddleco]
     env:
       RUSTC_WRAPPER: "sccache"
     steps:

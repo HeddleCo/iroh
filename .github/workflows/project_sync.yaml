@@ -11,7 +11,7 @@ env:
 jobs:
   add-to-project:
     name: Add to project board
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, heddleco]
     steps:
       - uses: actions/create-github-app-token@v3
         id: app-token

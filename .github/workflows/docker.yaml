@@ -43,7 +43,7 @@ jobs:
     build_and_publish:
       timeout-minutes: 30
       name: Docker
-      runs-on: [self-hosted, linux, X64]
+      runs-on: [self-hosted, linux, X64, heddleco]
       steps:
         - name: Checkout
           uses: actions/checkout@v7
